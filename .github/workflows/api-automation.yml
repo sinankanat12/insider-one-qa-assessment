@@ -1,0 +1,62 @@
+name: API Automation Tests
+
+on:
+  push:
+    paths:
+      - 'api-automation/**'
+      - '.github/workflows/api-automation.yml'
+  pull_request:
+    paths:
+      - 'api-automation/**'
+      - '.github/workflows/api-automation.yml'
+  workflow_dispatch:
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: api-automation
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Set up JDK 17
+        uses: actions/setup-java@v4
+        with:
+          java-version: '17'
+          distribution: 'temurin'
+          cache: maven
+
+      - name: Run tests
+        run: mvn test
+
+      - name: Generate Allure report
+        if: always()
+        run: mvn allure:report
+
+      - name: Upload Allure results (raw)
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: allure-results
+          path: api-automation/target/allure-results/
+          retention-days: 30
+
+      - name: Upload Allure report (HTML)
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: allure-report
+          path: api-automation/target/site/allure-maven-plugin/
+          retention-days: 30
+
+      # Optional: publish to GitHub Pages on main branch
+      - name: Publish Allure report to GitHub Pages
+        if: github.ref == 'refs/heads/main' && always()
+        uses: peaceiris/actions-gh-pages@v4
+        with:
+          github_token: ${{ secrets.GITHUB_TOKEN }}
+          publish_dir: api-automation/target/site/allure-maven-plugin
+          destination_dir: allure-report

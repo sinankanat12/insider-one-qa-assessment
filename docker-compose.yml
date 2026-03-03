@@ -1,0 +1,78 @@
+version: "3.8"
+
+# ============================================================
+# insider-one-qa-assessment — Docker Compose Skeleton
+#
+# Services are NOT yet implemented.
+# Each service block is a placeholder ready for future setup.
+# ============================================================
+
+services:
+
+  # ----------------------------------------------------------
+  # UI Automation (e.g. Selenium / Playwright)
+  # ----------------------------------------------------------
+  ui-automation:
+    build:
+      context: ./ui-automation
+      dockerfile: Dockerfile
+    # image: ui-automation:latest
+    container_name: ui-automation
+    environment:
+      - ENV=ci
+    volumes:
+      - ./ui-automation:/app
+      - ./reports/ui:/app/reports
+    networks:
+      - qa-network
+    profiles:
+      - ui
+
+  # ----------------------------------------------------------
+  # API Automation (e.g. RestAssured / Pytest / Karate)
+  # ----------------------------------------------------------
+  api-automation:
+    build:
+      context: ./api-automation
+      dockerfile: Dockerfile
+    # image: api-automation:latest
+    container_name: api-automation
+    environment:
+      - ENV=ci
+      - BASE_URL=${BASE_URL:-https://api.example.com}
+    volumes:
+      - ./api-automation:/app
+      - ./reports/api:/app/reports
+    networks:
+      - qa-network
+    profiles:
+      - api
+
+  # ----------------------------------------------------------
+  # Load Testing (e.g. k6 / Gatling / Locust)
+  # ----------------------------------------------------------
+  load-testing:
+    build:
+      context: ./load-testing
+      dockerfile: Dockerfile
+    # image: load-testing:latest
+    container_name: load-testing
+    environment:
+      - ENV=ci
+      - TARGET_URL=${TARGET_URL:-https://api.example.com}
+      - VIRTUAL_USERS=${VIRTUAL_USERS:-10}
+      - DURATION=${DURATION:-30s}
+    volumes:
+      - ./load-testing:/app
+      - ./reports/load:/app/reports
+    networks:
+      - qa-network
+    profiles:
+      - load
+
+networks:
+  qa-network:
+    driver: bridge
+
+volumes:
+  reports:
