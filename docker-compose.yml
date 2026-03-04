@@ -1,28 +1,81 @@
 version: "3.8"
 
-# ============================================================
-# insider-one-qa-assessment — Docker Compose Skeleton
-#
-# Services are NOT yet implemented.
-# Each service block is a placeholder ready for future setup.
-# ============================================================
-
 services:
 
   # ----------------------------------------------------------
-  # UI Automation (e.g. Selenium / Playwright)
+  # Selenium Hub (Grid 4)
+  # ----------------------------------------------------------
+  selenium-hub:
+    image: selenium/hub:4.18.1
+    container_name: selenium-hub
+    ports:
+      - "4444:4444"
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:4444/wd/hub/status"]
+      interval: 10s
+      timeout: 10s
+      retries: 6
+    networks:
+      - qa-network
+    profiles:
+      - ui
+
+  # ----------------------------------------------------------
+  # Chrome Node
+  # ----------------------------------------------------------
+  chrome-node:
+    image: selenium/node-chrome:4.18.1
+    container_name: chrome-node
+    depends_on:
+      - selenium-hub
+    environment:
+      - SE_EVENT_BUS_HOST=selenium-hub
+      - SE_EVENT_BUS_PUBLISH_PORT=4442
+      - SE_EVENT_BUS_SUBSCRIBE_PORT=4443
+      - SE_NODE_MAX_SESSIONS=2
+    shm_size: "2g"
+    networks:
+      - qa-network
+    profiles:
+      - ui
+
+  # ----------------------------------------------------------
+  # Firefox Node
+  # ----------------------------------------------------------
+  firefox-node:
+    image: selenium/node-firefox:4.18.1
+    container_name: firefox-node
+    depends_on:
+      - selenium-hub
+    environment:
+      - SE_EVENT_BUS_HOST=selenium-hub
+      - SE_EVENT_BUS_PUBLISH_PORT=4442
+      - SE_EVENT_BUS_SUBSCRIBE_PORT=4443
+      - SE_NODE_MAX_SESSIONS=2
+    shm_size: "2g"
+    networks:
+      - qa-network
+    profiles:
+      - ui
+
+  # ----------------------------------------------------------
+  # UI Automation (Test Runner)
   # ----------------------------------------------------------
   ui-automation:
     build:
       context: ./ui-automation
       dockerfile: Dockerfile
-    # image: ui-automation:latest
     container_name: ui-automation
+    depends_on:
+      selenium-hub:
+        condition: service_healthy
+      chrome-node:
+        condition: service_started
+      firefox-node:
+        condition: service_started
     environment:
-      - ENV=ci
-    volumes:
-      - ./ui-automation:/app
-      - ./reports/ui:/app/reports
+      - BROWSER=${BROWSER:-chrome}
+      - GRID_URL=http://selenium-hub:4444/wd/hub
     networks:
       - qa-network
     profiles:
@@ -35,7 +88,6 @@ services:
     build:
       context: ./api-automation
       dockerfile: Dockerfile
-    # image: api-automation:latest
     container_name: api-automation
     environment:
       - ENV=ci
@@ -55,7 +107,6 @@ services:
     build:
       context: ./load-testing
       dockerfile: Dockerfile
-    # image: load-testing:latest
     container_name: load-testing
     environment:
       - ENV=ci

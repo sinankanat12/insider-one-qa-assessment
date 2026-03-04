@@ -1,0 +1,76 @@
+name: UI Automation Tests
+
+on:
+  push:
+    paths:
+      - 'ui-automation/**'
+      - '.github/workflows/ui-automation.yml'
+  pull_request:
+    paths:
+      - 'ui-automation/**'
+      - '.github/workflows/ui-automation.yml'
+  workflow_dispatch:
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+
+    strategy:
+      matrix:
+        browser: [chrome, firefox]
+      fail-fast: false
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Set up JDK 17
+        uses: actions/setup-java@v4
+        with:
+          java-version: '17'
+          distribution: 'temurin'
+          cache: maven
+
+      - name: Start Selenium Grid
+        run: |
+          docker compose --profile ui up selenium-hub chrome-node firefox-node -d
+          timeout 60 bash -c 'until curl -sf http://localhost:4444/wd/hub/status; do sleep 2; done'
+
+      - name: Run UI Tests
+        run: |
+          mvn test \
+            -Dbrowser=${{ matrix.browser }} \
+            -Dgrid.url=http://localhost:4444/wd/hub \
+            -f ui-automation/pom.xml
+
+      - name: Generate Allure Report
+        if: always()
+        run: mvn allure:report -f ui-automation/pom.xml
+
+      - name: Upload Allure Results
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: allure-results-${{ matrix.browser }}
+          path: ui-automation/target/allure-results/
+          retention-days: 30
+
+      - name: Upload Allure HTML Report
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: allure-report-${{ matrix.browser }}
+          path: ui-automation/target/site/allure-maven-plugin/
+          retention-days: 30
+
+      - name: Publish Allure Report to GitHub Pages
+        if: github.ref == 'refs/heads/main' && always()
+        uses: peaceiris/actions-gh-pages@v4
+        with:
+          github_token: ${{ secrets.GITHUB_TOKEN }}
+          publish_dir: ui-automation/target/site/allure-maven-plugin
+          destination_dir: allure-report/ui-${{ matrix.browser }}
+
+      - name: Stop Selenium Grid
+        if: always()
+        run: docker compose --profile ui down
