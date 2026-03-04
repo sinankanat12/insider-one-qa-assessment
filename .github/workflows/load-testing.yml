@@ -1,0 +1,85 @@
+name: Load Testing (Locust)
+
+on:
+  push:
+    paths:
+      - 'load-testing/**'
+      - '.github/workflows/load-testing.yml'
+  pull_request:
+    paths:
+      - 'load-testing/**'
+      - '.github/workflows/load-testing.yml'
+  workflow_dispatch:
+    inputs:
+      duration_seconds:
+        description: 'Test duration in seconds'
+        required: false
+        default: '60'
+      user_count:
+        description: 'Number of virtual users'
+        required: false
+        default: '1'
+
+jobs:
+  load-test:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Set up Python 3.11
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+
+      - name: Install Locust dependencies
+        run: pip install -r load-testing/locust/requirements.txt
+
+      - name: Prepare results directory
+        run: mkdir -p load-testing/locust/results
+
+      - name: Write test config
+        run: |
+          cat > load-testing/locust/results/current_test.json << 'EOF'
+          {
+            "base_url": "https://www.n11.com",
+            "endpoints": [
+              { "path": "/arama", "method": "GET", "weight": 3, "query_params": { "q": "laptop" } },
+              { "path": "/",      "method": "GET", "weight": 1, "query_params": {} }
+            ],
+            "user_count": ${{ github.event.inputs.user_count || 1 }},
+            "spawn_rate": 1,
+            "duration_seconds": ${{ github.event.inputs.duration_seconds || 60 }}
+          }
+          EOF
+
+      - name: Run Locust headless
+        working-directory: load-testing/locust
+        env:
+          LOCUST_CONFIG_DIR: results
+          LOCUST_RESULTS_DIR: results
+        run: |
+          locust \
+            -f locustfile.py \
+            --headless \
+            --host https://www.n11.com \
+            -u ${{ github.event.inputs.user_count || 1 }} \
+            -r 1 \
+            -t ${{ github.event.inputs.duration_seconds || 60 }}s \
+            --json \
+            --logfile results/locust.log \
+          > results/locust_stats.json
+
+      - name: Verify stats file produced
+        run: test -s load-testing/locust/results/locust_stats.json
+
+      - name: Upload results
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: load-test-results
+          path: |
+            load-testing/locust/results/locust_stats.json
+            load-testing/locust/results/locust.log
+          retention-days: 30

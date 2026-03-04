@@ -101,21 +101,62 @@ services:
       - api
 
   # ----------------------------------------------------------
-  # Load Testing (e.g. k6 / Gatling / Locust)
+  # Load Testing — Frontend Dashboard
   # ----------------------------------------------------------
-  load-testing:
+  load-frontend:
     build:
-      context: ./load-testing
+      context: ./load-testing/frontend
       dockerfile: Dockerfile
-    container_name: load-testing
-    environment:
-      - ENV=ci
-      - TARGET_URL=${TARGET_URL:-https://api.example.com}
-      - VIRTUAL_USERS=${VIRTUAL_USERS:-10}
-      - DURATION=${DURATION:-30s}
+    container_name: load-frontend
+    ports:
+      - "3000:80"
+    depends_on:
+      load-backend:
+        condition: service_healthy
+    networks:
+      - qa-network
+    profiles:
+      - load
+
+  # ----------------------------------------------------------
+  # Load Testing — Backend API
+  # ----------------------------------------------------------
+  load-backend:
+    build:
+      context: ./load-testing/backend
+      dockerfile: Dockerfile
+    container_name: load-backend
+    ports:
+      - "8000:8000"
+    env_file:
+      - ./load-testing/.env
     volumes:
-      - ./load-testing:/app
-      - ./reports/load:/app/reports
+      - locust-data:/app/results
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8000/health"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+      start_period: 10s
+    networks:
+      - qa-network
+    profiles:
+      - load
+
+  # ----------------------------------------------------------
+  # Load Testing — Locust Engine
+  # ----------------------------------------------------------
+  load-locust:
+    build:
+      context: ./load-testing/locust
+      dockerfile: Dockerfile
+    container_name: load-locust
+    ports:
+      - "8089:8089"
+    env_file:
+      - ./load-testing/.env
+    volumes:
+      - locust-data:/app/results
     networks:
       - qa-network
     profiles:
@@ -127,3 +168,4 @@ networks:
 
 volumes:
   reports:
+  locust-data:
