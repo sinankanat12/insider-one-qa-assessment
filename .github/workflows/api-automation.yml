@@ -11,6 +11,11 @@ on:
       - '.github/workflows/api-automation.yml'
   workflow_dispatch:
 
+permissions:
+  contents: write
+  pages: write
+  id-token: write
+
 jobs:
   test:
     runs-on: ubuntu-latest
