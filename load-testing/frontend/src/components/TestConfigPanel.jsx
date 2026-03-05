@@ -1,39 +1,38 @@
 export function TestConfigPanel({ userCount, spawnRate, durationSeconds, onChange, disabled }) {
   return (
-    <div>
-      <p className="text-sm font-medium text-gray-700 mb-2">Test Configuration</p>
-      <div className="grid grid-cols-3 gap-3">
+    <div className="space-y-4">
+      <div>
+        <label className="block text-[10px] uppercase font-bold tracking-widest text-text-charcoal mb-2">VIRTUAL USERS</label>
+        <input
+          type="number"
+          value={userCount}
+          min={1}
+          disabled={disabled}
+          onChange={(e) => onChange("userCount", parseInt(e.target.value) || 1)}
+          className="w-full border border-border-gray px-3 py-2 text-sm focus:outline-none focus:border-primary focus:ring-1 focus:ring-primary disabled:bg-gray-50"
+        />
+      </div>
+      <div className="grid grid-cols-2 gap-4">
         <div>
-          <label className="block text-xs font-medium text-gray-600 mb-1">Users</label>
-          <input
-            type="number"
-            value={userCount}
-            min={1}
-            disabled={disabled}
-            onChange={(e) => onChange("userCount", parseInt(e.target.value) || 1)}
-            className="w-full border border-gray-300 rounded px-2 py-1.5 text-sm focus:outline-none focus:ring-1 focus:ring-indigo-400 disabled:bg-gray-50"
-          />
-        </div>
-        <div>
-          <label className="block text-xs font-medium text-gray-600 mb-1">Spawn rate/s</label>
+          <label className="block text-[10px] uppercase font-bold tracking-widest text-text-charcoal mb-2">SPAWN RATE / s</label>
           <input
             type="number"
             value={spawnRate}
             min={1}
             disabled={disabled}
             onChange={(e) => onChange("spawnRate", parseInt(e.target.value) || 1)}
-            className="w-full border border-gray-300 rounded px-2 py-1.5 text-sm focus:outline-none focus:ring-1 focus:ring-indigo-400 disabled:bg-gray-50"
+            className="w-full border border-border-gray px-3 py-2 text-sm focus:outline-none focus:border-primary focus:ring-1 focus:ring-primary disabled:bg-gray-50"
           />
         </div>
         <div>
-          <label className="block text-xs font-medium text-gray-600 mb-1">Duration (s)</label>
+          <label className="block text-[10px] uppercase font-bold tracking-widest text-text-charcoal mb-2">DURATION (s)</label>
           <input
             type="number"
             value={durationSeconds}
             min={5}
             disabled={disabled}
             onChange={(e) => onChange("durationSeconds", parseInt(e.target.value) || 60)}
-            className="w-full border border-gray-300 rounded px-2 py-1.5 text-sm focus:outline-none focus:ring-1 focus:ring-indigo-400 disabled:bg-gray-50"
+            className="w-full border border-border-gray px-3 py-2 text-sm focus:outline-none focus:border-primary focus:ring-1 focus:ring-primary disabled:bg-gray-50"
           />
         </div>
       </div>
