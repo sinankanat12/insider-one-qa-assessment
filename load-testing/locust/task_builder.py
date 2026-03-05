@@ -36,17 +36,30 @@ def build_task_set():
         query_params = ep.get("query_params", {})
 
         def make_task(p, m, qp):
+            # Build display name with query params: /arama?q=laptop&pg=2
+            if qp:
+                qs = "&".join(f"{k}={v}" for k, v in qp.items())
+                display_name = f"{p}?{qs}"
+            else:
+                display_name = p
+
             def endpoint_task(self):
+                headers = {
+                    "User-Agent": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/122.0.0.0 Safari/537.36",
+                    "Accept": "text/html,application/xhtml+xml,application/xml;q=0.9,image/avif,image/webp,image/apng,*/*;q=0.8",
+                    "Accept-Language": "tr-TR,tr;q=0.9,en-US;q=0.8,en;q=0.7",
+                }
+
                 if m == "GET":
-                    self.client.get(p, params=qp, name=p)
+                    self.client.get(p, params=qp, headers=headers, name=display_name)
                 elif m == "POST":
-                    self.client.post(p, params=qp, name=p)
+                    self.client.post(p, params=qp, headers=headers, name=display_name)
                 elif m == "PUT":
-                    self.client.put(p, params=qp, name=p)
+                    self.client.put(p, params=qp, headers=headers, name=display_name)
                 elif m == "DELETE":
-                    self.client.delete(p, params=qp, name=p)
+                    self.client.delete(p, params=qp, headers=headers, name=display_name)
                 else:
-                    self.client.get(p, params=qp, name=p)
+                    self.client.get(p, params=qp, headers=headers, name=display_name)
             return endpoint_task
 
         task_func = task(weight)(make_task(path, method, query_params))

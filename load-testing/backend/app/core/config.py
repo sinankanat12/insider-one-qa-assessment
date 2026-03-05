@@ -17,6 +17,8 @@ class Settings(BaseSettings):
     app_env: str = "production"
     log_level: str = "info"
 
+    locust_web_port: int = 8089
+
     cors_allowed_origins: str = "http://localhost:3000,http://load-frontend:80"
 
     @property

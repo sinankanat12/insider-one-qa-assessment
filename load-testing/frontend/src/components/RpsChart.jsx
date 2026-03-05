@@ -1,20 +1,31 @@
-import { useEffect, useState } from "react";
+import { useEffect, useState, useRef } from "react";
 
 const MAX_POINTS = 60; // 60 seconds of data
 
 export function RpsChart({ isRunning, currentRps, currentErrors }) {
     const [dataPoints, setDataPoints] = useState([]);
 
+    const rpsRef = useRef(currentRps);
+    const errRef = useRef(currentErrors);
+
+    useEffect(() => {
+        rpsRef.current = currentRps;
+        errRef.current = currentErrors;
+    }, [currentRps, currentErrors]);
+
     useEffect(() => {
         if (!isRunning) return;
-        setDataPoints((prev) => {
-            const now = new Date();
-            const newPoint = { time: now, rps: currentRps || 0, errors: currentErrors || 0 };
-            const updated = [...prev, newPoint];
-            if (updated.length > MAX_POINTS) return updated.slice(updated.length - MAX_POINTS);
-            return updated;
-        });
-    }, [isRunning, currentRps, currentErrors]); // this won't perfectly poll unless currentRps changes or we trigger it another way. Actually, MetricsDashboard polls and updates state. DashboardPage will pass currentRps.
+        const interval = setInterval(() => {
+            setDataPoints((prev) => {
+                const now = new Date();
+                const newPoint = { time: now, rps: rpsRef.current || 0, errors: errRef.current || 0 };
+                const updated = [...prev, newPoint];
+                if (updated.length > MAX_POINTS) return updated.slice(updated.length - MAX_POINTS);
+                return updated;
+            });
+        }, 1000);
+        return () => clearInterval(interval);
+    }, [isRunning]);
 
     // To draw SVG
     if (dataPoints.length === 0) {

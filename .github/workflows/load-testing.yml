@@ -45,8 +45,9 @@ jobs:
           {
             "base_url": "https://www.n11.com",
             "endpoints": [
+              { "path": "/",      "method": "GET", "weight": 1, "query_params": {} },
               { "path": "/arama", "method": "GET", "weight": 3, "query_params": { "q": "laptop" } },
-              { "path": "/",      "method": "GET", "weight": 1, "query_params": {} }
+              { "path": "/arama", "method": "GET", "weight": 2, "query_params": { "q": "telefon" } }
             ],
             "user_count": ${{ github.event.inputs.user_count || 1 }},
             "spawn_rate": 1,

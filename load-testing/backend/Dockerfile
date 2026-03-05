@@ -4,10 +4,12 @@ WORKDIR /app
 
 RUN apt-get update && apt-get install -y curl && rm -rf /var/lib/apt/lists/*
 
-COPY requirements.txt .
+COPY backend/requirements.txt .
 RUN pip install --no-cache-dir -r requirements.txt
 
-COPY app/ ./app/
+# Copy backend app and locust files separately for proper organization
+COPY backend/app/ ./app/
+COPY locust/ ./locust/
 
 RUN mkdir -p /app/results
 

@@ -75,3 +75,20 @@ class MetricsResponse(BaseModel):
 
 class HealthResponse(BaseModel):
     ok: bool = True
+
+
+class TestHistoryResponse(BaseModel):
+    id: int
+    created_at: str
+    base_url: str
+    endpoints: int
+    duration_seconds: int
+    num_requests: int
+    num_failures: int
+    avg_rps: float
+    avg_response_time_ms: float
+    p95_response_time_ms: float
+    failure_rate_pct: float
+
+    class Config:
+        from_attributes = True

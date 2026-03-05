@@ -10,16 +10,38 @@ import { RpsChart } from "../components/RpsChart";
 import { RequestLogs } from "../components/RequestLogs";
 
 const DEFAULT_ENDPOINTS = [
-    { path: "/arama", method: "GET", weight: 3, query_params: {} },
     { path: "/", method: "GET", weight: 1, query_params: {} },
+    { path: "/arama", method: "GET", weight: 3, query_params: { q: "laptop" } },
+    { path: "/arama", method: "GET", weight: 2, query_params: { q: "telefon" } },
 ];
 
+function useLocalStorage(key, initialValue) {
+    const [storedValue, setStoredValue] = useState(() => {
+        try {
+            const item = window.localStorage.getItem(key);
+            return item ? JSON.parse(item) : initialValue;
+        } catch (error) {
+            return initialValue;
+        }
+    });
+    const setValue = (value) => {
+        try {
+            const valueToStore = value instanceof Function ? value(storedValue) : value;
+            setStoredValue(valueToStore);
+            window.localStorage.setItem(key, JSON.stringify(valueToStore));
+        } catch (error) {
+            console.error(error);
+        }
+    };
+    return [storedValue, setValue];
+}
+
 export function DashboardPage() {
-    const [baseUrl, setBaseUrl] = useState("https://www.n11.com");
-    const [endpoints, setEndpoints] = useState(DEFAULT_ENDPOINTS);
-    const [userCount, setUserCount] = useState(1);
-    const [spawnRate, setSpawnRate] = useState(1);
-    const [durationSeconds, setDurationSeconds] = useState(60);
+    const [baseUrl, setBaseUrl] = useLocalStorage("testConfig_baseUrl", "https://www.n11.com");
+    const [endpoints, setEndpoints] = useLocalStorage("testConfig_endpoints", DEFAULT_ENDPOINTS);
+    const [userCount, setUserCount] = useLocalStorage("testConfig_userCount", 1);
+    const [spawnRate, setSpawnRate] = useLocalStorage("testConfig_spawnRate", 1);
+    const [durationSeconds, setDurationSeconds] = useLocalStorage("testConfig_durationSeconds", 60);
 
     const [testStatus, setTestStatus] = useState("idle");
     const [actionLoading, setActionLoading] = useState(false);
@@ -115,18 +137,22 @@ export function DashboardPage() {
     const handleMetricsUpdate = useCallback((data) => {
         setMetricsData(data);
 
-        // Auto-generate some mock logs based on RPS for demonstration (if backend has no real logs)
         if (data.totals?.rps > 0) {
+            const failRate = (data.totals.failure_rate_pct || 0) / 100;
+            const stats = data.stats || [];
+            // Pick a random endpoint from actual stats
+            const randomStat = stats.length > 0 ? stats[Math.floor(Math.random() * stats.length)] : null;
+
             setLogs((prev) => {
                 const newLog = {
                     timestamp: new Date().toISOString().split('T')[1].slice(0, -1),
-                    method: "GET",
-                    path: data.stats?.[0]?.name || "/mock-endpoint",
-                    status: Math.random() > 0.9 ? 500 : 200,
+                    method: randomStat?.method || "GET",
+                    path: randomStat?.name || "/",
+                    status: Math.random() < failRate ? 500 : 200,
                     latency: Math.floor(data.totals.avg_response_time_ms || 100),
                 };
                 const updated = [newLog, ...prev];
-                return updated.slice(0, 100); // keep last 100
+                return updated.slice(0, 100);
             });
         }
     }, []);
@@ -138,7 +164,7 @@ export function DashboardPage() {
             <main className="flex flex-1 overflow-hidden h-[calc(100vh-73px)]">
                 {/* Sidebar Configuration Panel */}
                 <aside className="w-1/3 min-w-[450px] border-r border-border-gray bg-white overflow-y-auto flex flex-col">
-                    <div className="p-6 space-y-8 flex-1">
+                    <div className={`p-6 space-y-8 flex-1 transition-opacity ${isRunning ? "opacity-50 pointer-events-none" : ""}`}>
                         <BaseUrlInput value={baseUrl} onChange={setBaseUrl} disabled={isRunning} />
                         <EndpointBuilder endpoints={endpoints} onChange={setEndpoints} disabled={isRunning} />
                         <TestConfigPanel
@@ -177,20 +203,26 @@ export function DashboardPage() {
                 </aside>
 
                 {/* Main Content Area */}
-                <section className="flex-1 bg-light-bg overflow-y-auto p-6 flex flex-col gap-6">
-                    <MetricsDashboard
-                        testStatus={testStatus}
-                        metricsData={metricsData}
-                        onMetricsUpdate={handleMetricsUpdate}
-                    />
+                <section className="flex-1 bg-light-bg overflow-hidden p-6 flex flex-col gap-6">
+                    <div className="shrink-0">
+                        <MetricsDashboard
+                            testStatus={testStatus}
+                            metricsData={metricsData}
+                            onMetricsUpdate={handleMetricsUpdate}
+                        />
+                    </div>
 
-                    <RpsChart
-                        isRunning={isRunning}
-                        currentRps={currentRps}
-                        currentErrors={Math.round(currentErrors)}
-                    />
+                    <div className="shrink-0">
+                        <RpsChart
+                            isRunning={isRunning}
+                            currentRps={currentRps}
+                            currentErrors={Math.round(currentErrors)}
+                        />
+                    </div>
 
-                    <RequestLogs logs={logs} onClear={() => setLogs([])} />
+                    <div className="flex-1 min-h-0">
+                        <RequestLogs logs={logs} onClear={() => setLogs([])} />
+                    </div>
                 </section>
             </main>
         </div>

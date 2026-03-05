@@ -27,4 +27,7 @@ export const backendClient = {
 
   getHealth: () =>
     request("/health"),
+
+  getHistory: () =>
+    request("/test/history"),
 };

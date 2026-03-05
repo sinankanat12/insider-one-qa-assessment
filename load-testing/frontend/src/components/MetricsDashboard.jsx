@@ -3,7 +3,7 @@ import { backendClient } from "../api/backendClient";
 import { usePolling } from "../hooks/usePolling";
 
 export function MetricsDashboard({ testStatus, metricsData, onMetricsUpdate }) {
-  const isRunning = testStatus === "running";
+  const isRunning = testStatus === "running" || testStatus === "starting";
 
   const fetchMetrics = useCallback(async () => {
     try {

@@ -123,8 +123,8 @@ services:
   # ----------------------------------------------------------
   load-backend:
     build:
-      context: ./load-testing/backend
-      dockerfile: Dockerfile
+      context: ./load-testing
+      dockerfile: ./backend/Dockerfile
     container_name: load-backend
     ports:
       - "8000:8000"

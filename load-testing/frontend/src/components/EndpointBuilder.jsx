@@ -34,10 +34,10 @@ export function EndpointBuilder({ endpoints, onChange, disabled }) {
       {/* Header row */}
       <div className="grid grid-cols-12 gap-2 mb-1 px-2">
         <div className="col-span-1 flex justify-center text-[10px] text-gray-500 font-bold uppercase tracking-widest">On</div>
-        <div className="col-span-5 text-[10px] text-gray-500 font-bold uppercase tracking-widest">Path</div>
-        <div className="col-span-3 text-[10px] text-gray-500 font-bold uppercase tracking-widest">Method</div>
+        <div className="col-span-4 text-[10px] text-gray-500 font-bold uppercase tracking-widest">Path</div>
+        <div className="col-span-2 text-[10px] text-gray-500 font-bold uppercase tracking-widest">Method</div>
         <div className="col-span-2 text-[10px] text-gray-500 font-bold uppercase tracking-widest">Weight</div>
-        <div className="col-span-1"></div>
+        <div className="col-span-3"></div>
       </div>
 
       <div className="space-y-2">

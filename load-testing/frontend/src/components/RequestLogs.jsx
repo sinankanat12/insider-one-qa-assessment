@@ -1,12 +1,9 @@
 export function RequestLogs({ logs, onClear }) {
     return (
-        <div className="bg-panel-light border border-border-gray flex flex-col" style={{ minHeight: "300px" }}>
+        <div className="bg-panel-light border border-border-gray flex flex-col max-h-[400px] overflow-hidden">
             <div className="flex justify-between items-center p-4 border-b border-border-gray bg-white">
                 <h3 className="text-sm font-semibold uppercase tracking-widest text-text-charcoal m-0">REQUEST LOGS</h3>
                 <div className="flex gap-2">
-                    <button className="text-[11px] font-bold tracking-widest text-text-charcoal bg-light-bg px-3 py-1.5 hover:bg-gray-200 transition-colors">
-                        EXPORT JSON
-                    </button>
                     <button
                         onClick={onClear}
                         className="text-[11px] font-bold tracking-widest text-danger bg-red-50 px-3 py-1.5 hover:bg-red-100 transition-colors"

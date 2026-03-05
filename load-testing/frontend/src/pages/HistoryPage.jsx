@@ -1,27 +1,67 @@
+import { useState, useEffect } from "react";
 import { Header } from "../components/Header";
-import { RequestLogs } from "../components/RequestLogs";
+import { backendClient } from "../api/backendClient";
 
 export function HistoryPage() {
-    const mockHistory = [
-        { id: 1, date: "2026-03-05 14:30", url: "https://www.n11.com", endpoints: 2, duration: 60, reqs: 14500, rps: 241.6, fail: 0.2 },
-        { id: 2, date: "2026-03-05 12:15", url: "https://www.n11.com", endpoints: 5, duration: 300, reqs: 82000, rps: 273.3, fail: 1.5 },
-        { id: 3, date: "2026-03-04 09:00", url: "https://api.n11.com", endpoints: 1, duration: 120, reqs: 12000, rps: 100.0, fail: 0.0 },
-    ];
+    const [history, setHistory] = useState([]);
+    const [loading, setLoading] = useState(true);
 
-    const mockLogs = [
-        { timestamp: "14:30:05", method: "GET", path: "/arama", status: 200, latency: 45 },
-        { timestamp: "14:30:06", method: "POST", path: "/checkout", status: 500, latency: 1250 },
-    ];
+    useEffect(() => {
+        backendClient.getHistory()
+            .then(data => setHistory(data))
+            .catch(err => console.error("Failed to fetch history", err))
+            .finally(() => setLoading(false));
+    }, []);
+
+    const handleExportCsv = () => {
+        if (history.length === 0) return;
+
+        const headers = ["ID", "Date & Time", "Base URL", "Endpoints", "Duration (s)", "Requests", "Failures", "Avg RPS", "Avg Response Time (ms)", "P95 Response Time (ms)", "Failure Rate (%)"];
+        const rows = history.map(h => [
+            h.id,
+            h.created_at,
+            h.base_url,
+            h.endpoints,
+            h.duration_seconds,
+            h.num_requests,
+            h.num_failures,
+            h.avg_rps.toFixed(2),
+            h.avg_response_time_ms.toFixed(2),
+            h.p95_response_time_ms.toFixed(2),
+            (h.failure_rate_pct || 0).toFixed(2),
+        ]);
+
+        const csvContent = [
+            headers.join(","),
+            ...rows.map(r => r.map(v => `"${v}"`).join(",")),
+        ].join("\n");
+
+        const blob = new Blob([csvContent], { type: "text/csv;charset=utf-8;" });
+        const url = URL.createObjectURL(blob);
+        const link = document.createElement("a");
+        link.href = url;
+        link.download = `test-history-${new Date().toISOString().slice(0, 10)}.csv`;
+        link.click();
+        URL.revokeObjectURL(url);
+    };
 
     return (
         <div className="min-h-screen bg-light-bg flex flex-col font-display">
             <Header />
 
-            <main className="max-w-7xl mx-auto w-full px-6 py-8 space-y-8">
-
-                {/* History Table */}
+            <main className="max-w-7xl mx-auto w-full px-6 py-8">
                 <div className="bg-panel-light border border-border-gray p-0">
-                    <h2 className="text-sm font-semibold uppercase tracking-widest text-text-charcoal p-4 border-b border-border-gray">Test History</h2>
+                    <div className="flex justify-between items-center p-4 border-b border-border-gray">
+                        <h2 className="text-sm font-semibold uppercase tracking-widest text-text-charcoal">Test History</h2>
+                        <button
+                            onClick={handleExportCsv}
+                            disabled={history.length === 0}
+                            className="flex items-center gap-1.5 text-[11px] font-bold tracking-widest text-text-charcoal bg-white border border-border-gray px-3 py-1.5 hover:bg-gray-50 transition-colors disabled:opacity-30 disabled:cursor-not-allowed"
+                        >
+                            <span className="material-symbols-outlined text-[14px]">download</span>
+                            EXPORT CSV
+                        </button>
+                    </div>
                     <table className="w-full text-left text-[13px]">
                         <thead className="bg-gray-50 text-gray-500 uppercase">
                             <tr>
@@ -32,67 +72,31 @@ export function HistoryPage() {
                                 <th className="py-3 px-4 font-normal">Duration</th>
                                 <th className="py-3 px-4 font-normal">Requests</th>
                                 <th className="py-3 px-4 font-normal">Avg RPS</th>
+                                <th className="py-3 px-4 font-normal">Avg RT (ms)</th>
                                 <th className="py-3 px-4 font-normal">Fail %</th>
-                                <th className="py-3 px-4 font-normal text-right">Action</th>
                             </tr>
                         </thead>
                         <tbody>
-                            {mockHistory.map((h, i) => (
-                                <tr key={h.id} className={`border-b border-border-gray hover:bg-light-bg transition-colors ${i === 0 ? 'bg-primary/5 border-l-4 border-l-primary' : 'border-l-4 border-l-transparent'}`}>
+                            {loading ? (
+                                <tr><td colSpan="9" className="py-6 text-center text-gray-400">Loading history...</td></tr>
+                            ) : history.length === 0 ? (
+                                <tr><td colSpan="9" className="py-6 text-center text-gray-400">No test history found.</td></tr>
+                            ) : history.map((h) => (
+                                <tr key={h.id} className="border-b border-border-gray hover:bg-light-bg transition-colors">
                                     <td className="py-3 px-4">{h.id}</td>
-                                    <td className="py-3 px-4 text-gray-500">{h.date}</td>
-                                    <td className="py-3 px-4 font-mono">{h.url}</td>
+                                    <td className="py-3 px-4 text-gray-500">{h.created_at}</td>
+                                    <td className="py-3 px-4 font-mono">{h.base_url}</td>
                                     <td className="py-3 px-4">{h.endpoints}</td>
-                                    <td className="py-3 px-4">{h.duration}s</td>
-                                    <td className="py-3 px-4 font-mono">{h.reqs.toLocaleString()}</td>
-                                    <td className="py-3 px-4 font-mono">{h.rps.toFixed(1)}</td>
-                                    <td className={`py-3 px-4 font-mono ${h.fail > 0 ? 'text-danger' : 'text-success'}`}>{h.fail}%</td>
-                                    <td className="py-3 px-4 text-right">
-                                        <button className="text-[11px] font-bold tracking-widest text-primary hover:underline uppercase">View Details</button>
-                                    </td>
+                                    <td className="py-3 px-4">{h.duration_seconds}s</td>
+                                    <td className="py-3 px-4 font-mono">{h.num_requests.toLocaleString()}</td>
+                                    <td className="py-3 px-4 font-mono">{h.avg_rps.toFixed(1)}</td>
+                                    <td className="py-3 px-4 font-mono">{Math.round(h.avg_response_time_ms)}</td>
+                                    <td className={`py-3 px-4 font-mono ${(h.failure_rate_pct || 0) > 0 ? 'text-danger' : 'text-success'}`}>{(h.failure_rate_pct || 0).toFixed(1)}%</td>
                                 </tr>
                             ))}
                         </tbody>
                     </table>
                 </div>
-
-                {/* Selected Report */}
-                <div className="bg-panel-light border border-border-gray p-0 mt-8">
-                    <div className="p-4 border-b border-border-gray flex justify-between items-center bg-gray-50">
-                        <h3 className="text-sm font-bold uppercase tracking-widest text-text-charcoal">
-                            REPORT: 2026-03-05 14:30 | https://www.n11.com | 60 SECONDS
-                        </h3>
-                        <div className="flex gap-2">
-                            <button className="text-[11px] font-bold tracking-widest bg-white border border-border-gray text-text-charcoal px-3 py-1.5 hover:bg-gray-50 transition-colors">EXPORT JSON</button>
-                            <button className="text-[11px] font-bold tracking-widest bg-white border border-border-gray text-text-charcoal px-3 py-1.5 hover:bg-gray-50 transition-colors">EXPORT CSV</button>
-                        </div>
-                    </div>
-
-                    <div className="p-6 grid grid-cols-4 gap-4">
-                        {/* Report cards */}
-                        <div className="border border-border-gray p-4 border-l-4 border-l-success">
-                            <div className="text-xs text-gray-500 mb-1 uppercase tracking-wider">Total Requests</div>
-                            <div className="text-3xl font-mono font-bold text-text-charcoal">14,500 <span className="text-sm font-normal text-gray-400">REQ</span></div>
-                        </div>
-                        <div className="border border-border-gray p-4 border-l-4 border-l-primary">
-                            <div className="text-xs text-gray-500 mb-1 uppercase tracking-wider">Requests / Sec</div>
-                            <div className="text-3xl font-mono font-bold text-text-charcoal">241.6 <span className="text-sm font-normal text-gray-400">REQ/S</span></div>
-                        </div>
-                        <div className="border border-border-gray p-4 border-l-4 border-l-warning">
-                            <div className="text-xs text-gray-500 mb-1 uppercase tracking-wider">Avg Response Time</div>
-                            <div className="text-3xl font-mono font-bold text-text-charcoal">85 <span className="text-sm font-normal text-gray-400">MS</span></div>
-                        </div>
-                        <div className="border border-border-gray p-4 border-l-4 border-l-danger">
-                            <div className="text-xs text-gray-500 mb-1 uppercase tracking-wider">Failure Rate</div>
-                            <div className="text-3xl font-mono font-bold text-text-charcoal">0.2% <span className="text-sm font-normal text-gray-400">FAIL</span></div>
-                        </div>
-                    </div>
-
-                    <div className="p-6 pt-0">
-                        <RequestLogs logs={mockLogs} onClear={() => { }} />
-                    </div>
-                </div>
-
             </main>
         </div>
     );
