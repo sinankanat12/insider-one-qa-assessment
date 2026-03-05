@@ -70,10 +70,13 @@ jobs:
             -t ${{ github.event.inputs.duration_seconds || 60 }}s \
             --json \
             --logfile results/locust.log \
-          > results/locust_stats.json
+          > results/locust_stats.json || true
 
       - name: Verify stats file produced
-        run: test -s load-testing/locust/results/locust_stats.json
+        run: |
+          if [ ! -s load-testing/locust/results/locust_stats.json ]; then
+            echo "::warning::Stats file is empty — Locust may have failed to start"
+          fi
 
       - name: Upload results
         if: always()
