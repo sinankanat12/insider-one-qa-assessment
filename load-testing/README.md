@@ -213,11 +213,68 @@ This is not just a Locust script — it's a **complete load testing platform** w
 
 ---
 
+## Two Execution Modes
+
+This project supports two ways to run load tests — a full **dashboard mode** for interactive testing and a **headless mode** for CI/CD automation.
+
+### Dashboard Mode (Docker Compose)
+
+The primary mode — a full web UI for configuring, running, and monitoring tests in real-time.
+
+```bash
+docker compose --profile load up --build
+# Open http://localhost:3000
+```
+
+- 3 services start: React frontend, FastAPI backend, Locust engine
+- Configure endpoints, users, duration from the browser
+- Click START — metrics stream live to the dashboard
+- Backend spawns Locust with `--autostart --web-port 8089`
+- Backend polls Locust's REST API (`/stats/requests`) for real-time metrics
+- On completion, results are saved to SQLite and visible in the History page
+
+### Headless Mode (CI / Terminal)
+
+Runs Locust directly — no UI, no backend, no Docker required. Ideal for CI pipelines and quick terminal tests.
+
+```bash
+locust -f locustfile.py --headless -u 1 -r 1 -t 60s --json > results.json
+```
+
+- No frontend or backend involved — just Locust + Python
+- `--json` flag outputs stats to stdout when the test **completes** (not during)
+- `--headless` disables Locust's web UI entirely
+- Configuration is read from `current_test.json` at startup
+- Exit code 1 if any HTTP failures occurred (expected for sites with bot protection)
+
+### Comparison
+
+| | Dashboard Mode | Headless Mode |
+|---|---|---|
+| **Start command** | `docker compose --profile load up` | `locust -f locustfile.py --headless` |
+| **UI** | React dashboard at localhost:3000 | None — terminal output only |
+| **Backend** | FastAPI manages Locust subprocess | Not used |
+| **Metrics** | Real-time streaming every 1s | JSON dump after test ends |
+| **Config** | Browser UI (dynamic) | `current_test.json` (static) |
+| **History** | SQLite + CSV export | Artifact upload |
+| **Use case** | Interactive testing & monitoring | CI/CD automation |
+
+---
+
 ## CI/CD — GitHub Actions
 
-The workflow (`.github/workflows/load-testing.yml`) runs Locust **headless** on every push — no Docker, no frontend/backend needed.
+The workflow (`.github/workflows/load-testing.yml`) runs Locust in **headless mode** on every push — no Docker needed.
 
-**Trigger:** Push/PR on `load-testing/**` or manual `workflow_dispatch`.
+**Trigger:** Push/PR on `load-testing/**` or manual `workflow_dispatch` (with configurable duration and user count).
+
+**Pipeline steps:**
+1. Checkout code + set up Python 3.11
+2. Install Locust from `load-testing/locust/requirements.txt`
+3. Write test config (all 3 search scenarios) to `current_test.json`
+4. Run Locust headless for configured duration
+5. Upload `locust_stats.json` + `locust.log` as artifacts (30-day retention)
+
+**Note on exit codes:** n11.com has bot protection that may return HTTP 403 for automated requests. Locust treats non-2xx responses as failures and exits with code 1. The pipeline handles this gracefully with `|| true` — the test results are still captured and uploaded regardless of HTTP status codes. A 403 from bot protection is an expected observation, not a pipeline failure.
 
 ```bash
 # Simulate CI locally
@@ -228,7 +285,9 @@ cat > load-testing/locust/results/current_test.json << 'EOF'
 {
   "base_url": "https://www.n11.com",
   "endpoints": [
-    { "path": "/arama", "method": "GET", "weight": 3, "query_params": { "q": "laptop" } }
+    { "path": "/",      "method": "GET", "weight": 1, "query_params": {} },
+    { "path": "/arama", "method": "GET", "weight": 3, "query_params": { "q": "laptop" } },
+    { "path": "/arama", "method": "GET", "weight": 2, "query_params": { "q": "telefon" } }
   ],
   "user_count": 1,
   "spawn_rate": 1,
