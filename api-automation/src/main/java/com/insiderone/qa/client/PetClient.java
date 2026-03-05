@@ -45,6 +45,19 @@ public class PetClient extends BaseClient {
                 .response());
     }
 
+    public Response updateWithFormData(long id, String name, String status) {
+        return execute(() -> requestSpec()
+                .pathParam("id", id)
+                .contentType("application/x-www-form-urlencoded")
+                .formParam("name", name)
+                .formParam("status", status)
+                .when()
+                .post("/pet/{id}")
+                .then()
+                .extract()
+                .response());
+    }
+
     public Response findByStatus(String status) {
         return execute(() -> requestSpec()
                 .queryParam("status", status)

@@ -50,7 +50,7 @@ class DeletePetTest {
 
     @Test
     void deleteNonExistentPet_returns404() {
-        long nonExistentId = Long.MAX_VALUE - 1;
+        long nonExistentId = 5343535453534535313L;
         Response response = petClient.delete(nonExistentId);
         assertThat(response.statusCode(), is(404));
     }

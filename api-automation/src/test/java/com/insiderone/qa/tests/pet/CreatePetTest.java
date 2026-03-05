@@ -73,4 +73,39 @@ public class CreatePetTest {
         assertThat(response.statusCode(), anyOf(is(200), is(400), is(405), is(500)));
         // no cleanup — not persisted
     }
+
+    @Test
+    void createPetWithMaximumNameLength_CheckPersistence() {
+        Pet pet = PetFactory.availablePet();
+        String longName = "A".repeat(500); // 500 karakterlik çok uzun bir isim
+        pet.setName(longName);
+
+        Response response = petClient.create(pet);
+        assertThat(response.statusCode(), is(200));
+        assertThat(response.jsonPath().getString("name"), is(longName));
+        createdPet = pet;
+    }
+
+    @Test
+    void createPetWithSpecialCharactersAndJapanese_EncodingCheck() {
+        Pet pet = PetFactory.availablePet();
+        // Emoji, Japonca metin ve özel karakterler içeriyor
+        pet.setName("🐶🐈 ペット 123 !@#");
+
+        Response response = petClient.create(pet);
+        assertThat(response.statusCode(), is(200));
+        // Kaydedilirken encoding bozulup soru işaretine dönmemeli (?)
+        assertThat(response.jsonPath().getString("name"), is("🐶🐈 ペット 123 !@#"));
+        createdPet = pet;
+    }
+
+    @Test
+    void createPetWithVeryLargeIdValue_LongTypeCheck() {
+        Pet pet = PetFactory.availablePet();
+        pet.setId(Long.MAX_VALUE); // Alabildiği maximum long değeri
+
+        Response response = petClient.create(pet);
+        assertThat(response.statusCode(), is(200));
+        createdPet = pet;
+    }
 }
