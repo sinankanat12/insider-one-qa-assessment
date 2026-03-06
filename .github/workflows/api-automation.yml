@@ -60,6 +60,7 @@ jobs:
       # Publish to GitHub Pages on main branch
       - name: Prepare Pages Deployment
         if: github.ref == 'refs/heads/main' && always()
+        working-directory: .
         run: |
           mkdir -p deploy/reports/api
           cp -r api-automation/target/site/allure-maven-plugin/* deploy/reports/api/
