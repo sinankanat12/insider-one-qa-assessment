@@ -116,6 +116,7 @@ downloads/
 # =====================
 .env
 .env.*
+!.env.example
 secrets.yml
 secrets.yaml
 *.pem
