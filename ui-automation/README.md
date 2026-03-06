@@ -1,4 +1,4 @@
-# Insider One UI Automation Framework
+# UI Automation Framework
 
 This project contains a robust, scalable, and maintainable end-to-end UI automation framework for the Insider One platform. It is built using **Java**, **Selenium WebDriver**, and **JUnit 5**, strictly following the **Page Object Model (POM)** design pattern.
 

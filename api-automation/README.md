@@ -1,4 +1,4 @@
-# Insider One API Automation Framework
+# API Automation Framework
 
 This project contains a comprehensive suite of functional and contract tests for the [Petstore Swagger API](https://petstore.swagger.io/) `/pet` endpoints. It is built using **Java**, **RestAssured**, and **JUnit 5**, emphasizing clean code, reusability, and detailed reporting.
 

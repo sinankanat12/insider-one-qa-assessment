@@ -1,4 +1,4 @@
-# Insider One — QA Automation Assessment
+# QA Automation Assessment
 
 A **production-grade QA automation suite** covering the three pillars of software quality: **UI testing**, **API testing**, and **performance testing**. Each module is independently runnable, fully containerized with Docker, integrated into CI/CD via GitHub Actions, and produces detailed Allure / artifact-based reports.
 
@@ -13,7 +13,7 @@ A **production-grade QA automation suite** covering the three pillars of softwar
 ## Architecture Overview
 
 ```
-insider-one-qa-assessment/
+sinan_kanat_case/
 ├── ui-automation/           # Selenium-based E2E tests
 │   ├── pages/               #   Page Object classes
 │   ├── flows/               #   Multi-page user journey abstractions
@@ -48,8 +48,8 @@ insider-one-qa-assessment/
 ### Clone & Run
 
 ```bash
-git clone https://github.com/sinankanat12/insider-one-qa-assessment.git
-cd insider-one-qa-assessment
+git clone https://github.com/sinankanat12/sinan_kanat_case.git
+cd sinan_kanat_case
 ```
 
 Each module can run independently via Docker profiles:
