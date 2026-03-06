@@ -1,50 +1,82 @@
-# UI Automation
+# Insider One UI Automation Framework
 
-End-to-end browser automation tests for the Insider One platform.
+This project contains a robust, scalable, and maintainable end-to-end UI automation framework for the Insider One platform. It is built using **Java**, **Selenium WebDriver**, and **JUnit 5**, strictly following the **Page Object Model (POM)** design pattern.
 
-## Overview
+## 🚀 Key Features
 
-This module contains browser-based end-to-end tests using [Selenium / Playwright — TBD].
-Tests cover critical user journeys across the web application.
+- **Page Object Model (POM):** Clean separation between page elements, actions, and test logic.
+- **Flow-based Abstraction:** Complex multi-page user journeys are encapsulated in "Flow" classes (e.g., `JobSearchFlow`).
+- **BasePage Implementation:** Centralized wait strategies, scrolling, and common element interactions to ensure DRY (Don't Repeat Yourself) code.
+- **Automated Screenshots:** Leverages a custom JUnit 5 extension (`ScreenshotExtension`) to automatically capture and save screenshots on test failure.
+- **Reporting:** Integrated with **Allure Report** for detailed execution insights.
+- **Configuration Management:** Centralized configuration via `config.properties`.
+- **Driver Management:** Uses `ThreadLocal` for safe driver handling and future parallel execution support.
 
-## Tech Stack
+## 🛠 Tech Stack
 
-> To be defined during implementation.
+- **Language:** Java 17
+- **Test Framework:** JUnit 5
+- **Automation Tool:** Selenium WebDriver
+- **Build Tool:** Maven
+- **Reporting:** Allure
+- **Design Pattern:** POM & Flow-based Navigation
 
-- Language: Java or Python
-- Framework: Selenium WebDriver / Playwright
-- Reporting: Allure
+## 📋 Prerequisites
 
-## Prerequisites
+- **Java JDK 17+**
+- **Maven** installed and in your PATH.
+- **Chrome browser** installed (the framework defaults to Chrome).
+- **Allure Commandline** (optional, for viewing reports).
 
-- Java 17+ / Python 3.10+ (depending on chosen stack)
-- Chrome / Firefox browser installed
-- Docker (optional, for containerised runs)
+## 🏃 Running Tests
 
-## Running Tests
+### Run all tests
+```bash
+mvn clean test
+```
 
-### Locally
+### Run specific test class
+```bash
+mvn test -Dtest=InsiderOneUITest
+```
+
+### Run with a specific browser
+```bash
+mvn test -Dbrowser=firefox
+```
+
+## 📊 Reporting
+
+### Generating Allure Reports
+After running the tests, Allure results are generated in `target/allure-results`. To view the report:
 
 ```bash
-# To be filled in after implementation
+allure serve target/allure-results
 ```
 
-### With Docker
+### Screenshots on Failure
+If a test fails, a screenshot is automatically captured and saved in:
+`ui-automation/target/screenshots/{ClassName}/{MethodName}_{Timestamp}.png`
 
-```bash
-docker compose --profile ui up --build
-```
+Screenshots are also automatically attached to the Allure report.
 
-## Folder Structure
+## 📁 Project Structure
 
-```
+```text
 ui-automation/
-├── src/              # Test source code
-├── reports/          # Test run reports (generated)
-├── Dockerfile        # Container definition (to be created)
+├── src/main/java/com/insiderone/qa/
+│   ├── config/      # Configuration reader and properties
+│   ├── driver/      # WebDriver factory and manager
+│   ├── flows/       # Business flows (multi-page actions)
+│   └── pages/       # Page Object classes
+├── src/test/java/com/insiderone/qa/
+│   ├── extensions/  # JUnit 5 extensions (e.g., Screenshots)
+│   └── tests/       # UI Test classes
+├── src/main/resources/
+│   └── config.properties  # App configuration
+├── pom.xml          # Project dependencies
 └── README.md
 ```
 
-## Reports
-
-After a test run, Allure reports are generated under `reports/`.
+## 🧪 Demonstration
+The project includes an **`InsiderFailingUITest`** class which deliberately fails to demonstrate the automatic screenshot capture and reporting mechanism.

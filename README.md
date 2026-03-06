@@ -1,34 +1,30 @@
-# insider-one-qa-assessment
+# Insider One QA Automation Suite
 
-A monorepo containing the full QA automation suite for the Insider One platform.
+This monorepo contains the complete quality assurance automation infrastructure for the Insider One platform, covering UI, API, and Load testing.
 
 ---
 
 ## Modules
 
-| Module | Description | Stack |
+| Module | Description | Tech Stack |
 |---|---|---|
-| [`ui-automation`](./ui-automation) | End-to-end browser automation tests | Selenium / Playwright (TBD) |
-| [`api-automation`](./api-automation) | REST / GraphQL API contract & functional tests | RestAssured / Pytest (TBD) |
-| [`load-testing`](./load-testing) | Performance, load, and stress tests | k6 / Gatling / Locust (TBD) |
+| [`ui-automation`](./ui-automation) | End-to-end browser automation following POM & Flow patterns | **Java, Selenium, JUnit 5** |
+| [`api-automation`](./api-automation) | REST API functional and contract testing using model-driven patterns | **Java, RestAssured, JUnit 5** |
+| [`load-testing`](./load-testing) | Performance, load, and stress testing for the search module (k6 based) | **JS, k6, Docker** |
 
 ---
 
 ## Repository Structure
 
-```
+```text
 insider-one-qa-assessment/
 ├── .github/
-│   └── workflows/          # CI/CD pipeline definitions (coming soon)
-├── ui-automation/
-│   └── README.md
-├── api-automation/
-│   └── README.md
-├── load-testing/
-│   └── README.md
-├── docs/
-│   └── plans/              # Implementation plans
-├── docker-compose.yml      # Container orchestration skeleton
+│   └── workflows/          # CI/CD pipeline definitions
+├── ui-automation/          # Browser-based E2E tests
+├── api-automation/         # API-level functional tests
+├── load-testing/           # Performance and load tests
+├── docs/                   # implementation plans and reports
+├── docker-compose.yml      # Multi-module container orchestration
 ├── .gitignore
 └── README.md
 ```
@@ -39,53 +35,39 @@ insider-one-qa-assessment/
 
 ### Prerequisites
 
-- Git
-- Docker & Docker Compose v2+
-- (Module-specific runtimes — see each module's README)
+- **Java JDK 17+**
+- **Maven**
+- **Docker & Docker Compose v2+**
+- **Git**
 
 ### Clone the repository
-
 ```bash
-git clone https://github.com/<org>/insider-one-qa-assessment.git
+git clone https://github.com/sinankanat12/insider-one-qa-assessment.git
 cd insider-one-qa-assessment
 ```
 
-### Run a specific module with Docker
+### Module Execution (via Docker)
+
+You can run individual modules or the entire suite using Docker profiles:
 
 ```bash
-# UI Automation
+# Run UI Automation
 docker compose --profile ui up --build
 
-# API Automation
+# Run API Automation
 docker compose --profile api up --build
 
-# Load Testing
+# Run Load Testing
 docker compose --profile load up --build
-```
-
-### Run all modules
-
-```bash
-docker compose --profile ui --profile api --profile load up --build
 ```
 
 ---
 
 ## CI / CD
 
-GitHub Actions workflows will be added under `.github/workflows/` as each module is implemented.
-
----
-
-## Contributing
-
-1. Create a feature branch from `main`.
-2. Follow the coding conventions in each module's README.
-3. Ensure all tests pass locally before opening a pull request.
-4. Add or update documentation for any changes.
+The suite is integrated with **GitHub Actions**. Every pull request or push to the main branch triggers automated test runs across all modules, with Allure results stored as artifacts.
 
 ---
 
 ## License
-
 Internal use only — Insider One QA Team.

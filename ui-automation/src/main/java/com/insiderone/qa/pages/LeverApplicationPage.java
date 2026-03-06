@@ -7,28 +7,22 @@ import org.openqa.selenium.WebDriver;
 public class LeverApplicationPage extends BasePage {
 
     private static final By APPLICATION_FORM = By.cssSelector(
-            "form.application-form, .application-form, #application-form"
-    );
+            "form.application-form, .application-form, #application-form");
     private static final By APPLY_BUTTON = By.cssSelector(
-            "a[data-qa='btn-apply-bottom'], a[href*='apply'], button[type='submit']"
-    );
+            "a[data-qa='btn-apply-bottom'], a[href*='apply'], button[type='submit']");
 
     public LeverApplicationPage(WebDriver driver) {
         super(driver, ConfigReader.getExplicitWaitSeconds());
     }
 
     public boolean isOnLeverPage() {
-        String currentUrl = driver.getCurrentUrl();
-        String title = driver.getTitle();
-        return currentUrl.contains("lever.co")
-                || (title != null && title.toLowerCase().contains("lever"));
+        return driver.getCurrentUrl().contains("lever.co");
     }
 
     public boolean isApplicationFormDisplayed() {
-        try {
-            return isDisplayed(APPLICATION_FORM) || isDisplayed(APPLY_BUTTON);
-        } catch (Exception e) {
-            return false;
-        }
+        // Lever pages can be slow, but we don't want to wait 15+ seconds if we just
+        // want a quick check
+        // Check for either the form or the apply button with a short 3-second timeout
+        return isDisplayed(APPLICATION_FORM, 3) || isDisplayed(APPLY_BUTTON, 3);
     }
 }

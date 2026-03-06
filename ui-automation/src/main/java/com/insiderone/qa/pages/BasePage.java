@@ -13,9 +13,11 @@ public abstract class BasePage {
 
     protected final WebDriver driver;
     protected final WebDriverWait wait;
+    protected final int timeout;
 
     protected BasePage(WebDriver driver, int explicitWaitSeconds) {
         this.driver = driver;
+        this.timeout = explicitWaitSeconds;
         this.wait = new WebDriverWait(driver, Duration.ofSeconds(explicitWaitSeconds));
     }
 
@@ -36,8 +38,14 @@ public abstract class BasePage {
     }
 
     protected boolean isDisplayed(By locator) {
+        return isDisplayed(locator, timeout);
+    }
+
+    protected boolean isDisplayed(By locator, int timeoutSeconds) {
         try {
-            return waitForElement(locator).isDisplayed();
+            org.openqa.selenium.support.ui.WebDriverWait shortWait = new org.openqa.selenium.support.ui.WebDriverWait(
+                    driver, Duration.ofSeconds(timeoutSeconds));
+            return shortWait.until(ExpectedConditions.visibilityOfElementLocated(locator)).isDisplayed();
         } catch (Exception e) {
             return false;
         }
@@ -45,10 +53,45 @@ public abstract class BasePage {
 
     protected void scrollIntoView(By locator) {
         WebElement element = waitForElement(locator);
-        ((JavascriptExecutor) driver).executeScript("arguments[0].scrollIntoView(true);", element);
+        ((JavascriptExecutor) driver)
+                .executeScript("arguments[0].scrollIntoView({behavior: 'smooth', block: 'center'});", element);
     }
 
-    protected void waitForUrl(String urlContains) {
-        wait.until(ExpectedConditions.urlContains(urlContains));
+    protected void waitForUrlToContain(String urlFragment) {
+        wait.until(ExpectedConditions.urlContains(urlFragment));
+    }
+
+    protected void waitForPresenceOfElement(By locator) {
+        wait.until(ExpectedConditions.presenceOfElementLocated(locator));
+    }
+
+    protected void waitForNumberOfElementsToBeMoreThan(By locator, int count) {
+        wait.until(ExpectedConditions.numberOfElementsToBeMoreThan(locator, count));
+    }
+
+    protected WebElement waitForClickable(WebElement element) {
+        return wait.until(ExpectedConditions.elementToBeClickable(element));
+    }
+
+    public void acceptCookies() {
+        try {
+            By cookieBtn = By.cssSelector("#cookie-law-info-bar #wt-cli-accept-all-btn");
+            if (driver.findElements(cookieBtn).size() > 0 && driver.findElement(cookieBtn).isDisplayed()) {
+                WebElement btn = driver.findElement(cookieBtn);
+                ((JavascriptExecutor) driver).executeScript("arguments[0].click();", btn);
+                wait.until(ExpectedConditions.invisibilityOfElementLocated(cookieBtn));
+            }
+        } catch (Exception e) {
+            // ignore
+        }
+    }
+
+    public void waitForPageToLoad() {
+        try {
+            wait.until(webDriver -> ((JavascriptExecutor) webDriver).executeScript("return document.readyState")
+                    .equals("complete"));
+        } catch (Exception e) {
+            System.err.println("Page load wait interrupted: " + e.getMessage());
+        }
     }
 }

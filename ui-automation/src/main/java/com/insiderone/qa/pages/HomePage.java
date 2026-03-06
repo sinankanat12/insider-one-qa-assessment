@@ -7,10 +7,11 @@ import org.openqa.selenium.WebDriver;
 public class HomePage extends BasePage {
 
     // Locators
-    private static final By NAVBAR = By.cssSelector("#navigation");
-    private static final By HERO_SECTION = By.cssSelector("#main-head");
-    private static final By FOOTER = By.cssSelector("section#footer, footer#footer, #footer");
-    private static final By CONTENT_SECTION = By.cssSelector(".container .row, .tab-container, .swiper-slide");
+    private static final By NAVBAR = By.cssSelector("nav, [id='navigation']");
+    private static final By HERO_SECTION = By.cssSelector("main h1");
+    private static final By FOOTER = By.cssSelector(".footer-main");
+    private static final By CONTENT_SECTION = By
+            .cssSelector(".homepage-core-differentiators-wrapper, .homepage-capabilities-main");
 
     public HomePage(WebDriver driver) {
         super(driver, ConfigReader.getExplicitWaitSeconds());
@@ -18,13 +19,18 @@ public class HomePage extends BasePage {
 
     public void open() {
         driver.get(ConfigReader.getBaseUrl());
+        acceptCookies();
     }
 
     public boolean isPageLoaded() {
+        waitForPageToLoad();
+        try {
+            wait.until(d -> d.getTitle() != null && !d.getTitle().isBlank());
+        } catch (Exception e) {
+            // ignore
+        }
         String title = driver.getTitle();
-        return title != null
-                && !title.isBlank()
-                && (title.toLowerCase().contains("insider") || title.toLowerCase().contains("insiderone"));
+        return title != null && (title.toLowerCase().contains("insider") || title.toLowerCase().contains("insiderone"));
     }
 
     public boolean isNavbarDisplayed() {
