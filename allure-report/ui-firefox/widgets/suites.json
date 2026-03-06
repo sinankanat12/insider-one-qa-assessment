@@ -1,0 +1,1 @@
+{"total":2,"items":[{"uid":"1e35dbd51e056f67299d66115426a64e","name":"com.insiderone.qa.tests.InsiderFailingUITest","statistic":{"failed":1,"broken":0,"skipped":0,"passed":0,"unknown":0,"total":1}},{"uid":"d2143c465f3e650f64ef0c68c6b342e0","name":"com.insiderone.qa.tests.InsiderOneUITest","statistic":{"failed":0,"broken":0,"skipped":0,"passed":4,"unknown":0,"total":4}}]}
