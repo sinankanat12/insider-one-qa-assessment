@@ -157,12 +157,21 @@ The entire suite is orchestrated through a single `docker-compose.yml` with **pr
 
 ## Reporting
 
-- **Allure Reports** — UI and API modules generate rich, interactive HTML reports with request/response logs, execution timelines, and failure screenshots
-- **GitHub Pages** — automated report portal at the repository's Pages URL
-- **Load Testing History** — SQLite-backed history with CSV export from the dashboard
+CI pipeline'ları her çalıştığında Allure raporları otomatik olarak GitHub Pages'e deploy edilir. Tüm raporlara tek bir portal üzerinden erişilebilir:
+
+**[https://sinankanat12.github.io/sinan_kanat_case/](https://sinankanat12.github.io/sinan_kanat_case/)**
+
+| Report | Description |
+|--------|-------------|
+| **API Results** | REST API fonksiyonel, negatif, güvenlik ve performans test sonuçları |
+| **UI (Chrome)** | Chrome üzerinde Selenium Grid ile çalıştırılan E2E test sonuçları |
+| **UI (Firefox)** | Firefox üzerinde Selenium Grid ile çalıştırılan E2E test sonuçları |
+
+- **Allure Reports** — request/response logları, execution timeline, failure screenshot'ları dahil detaylı interaktif HTML raporlar
+- **Load Testing History** — Dashboard üzerinden SQLite'da saklanan test geçmişi, CSV olarak dışa aktarılabilir
 
 ```bash
-# View Allure report after a local test run
+# Lokal çalıştırma sonrası rapor görüntüleme
 cd ui-automation && allure serve target/allure-results
 cd api-automation && allure serve target/allure-results
 ```
