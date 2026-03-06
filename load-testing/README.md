@@ -63,7 +63,7 @@ With the default weights (1 : 3 : 2), approximate traffic distribution:
 
 ```bash
 # 1. Navigate to project root
-cd insider-one-qa-assessment
+cd sinan_kanat_case
 
 # 2. Create .env (no changes needed for default n11.com target)
 cp load-testing/.env.example load-testing/.env
