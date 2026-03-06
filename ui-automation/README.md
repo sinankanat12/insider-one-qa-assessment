@@ -79,5 +79,62 @@ ui-automation/
 └── README.md
 ```
 
+## 🐳 Selenium Grid (Docker)
+
+Proje, Docker Compose ile tam bir Selenium Grid altyapısı kurar. Testler lokal makineye browser kurmaya gerek kalmadan, izole container'lar içinde çalışır.
+
+### Mimari
+
+```
+┌─────────────────────────────────────────────────┐
+│              Selenium Hub (:4444)                │
+│         Tüm istekleri node'lara yönlendirir      │
+├────────────────────┬────────────────────────────┤
+│  Chrome Node (:7900) │  Firefox Node (:7901)     │
+│  seleniarm/chromium  │  seleniarm/firefox         │
+│  Max 2 session       │  Max 2 session             │
+└────────────────────┴────────────────────────────┘
+         ▲                        ▲
+         │    RemoteWebDriver     │
+         └────────┬───────────────┘
+                  │
+       ┌──────────┴──────────┐
+       │   ui-automation     │
+       │   (test runner)     │
+       │   GRID_URL=         │
+       │   http://selenium-  │
+       │   hub:4444/wd/hub   │
+       └─────────────────────┘
+```
+
+### Nasıl Çalışır
+
+1. `GRID_URL` environment variable'ı set edilmişse `DriverFactory` otomatik olarak `RemoteWebDriver` kullanır, yoksa lokal browser açar
+2. Docker Compose hub'ın healthy olmasını bekler, ardından test runner container'ını başlatır
+3. `BROWSER` env variable'ı ile browser seçimi yapılır (`chrome` veya `firefox`)
+
+### Çalıştırma
+
+```bash
+# Proje kök dizininden — Chrome (default)
+docker compose --profile ui up --build
+
+# Firefox ile çalıştırmak için
+BROWSER=firefox docker compose --profile ui up --build
+```
+
+> **Not:** `docker-compose.yml` dosyasında Apple Silicon (M-series) uyumu için `seleniarm/*` image'ları kullanılmaktadır. Intel/AMD makinelerde `seleniarm/*` yerine `selenium/*` yazılmalıdır.
+
+### VNC ile Canlı İzleme
+
+Grid node'ları VNC sunucusu içerir — testlerin browser'da nasıl çalıştığını canlı olarak izleyebilirsiniz:
+
+| Browser | VNC URL | Password |
+|---------|---------|----------|
+| Chrome | `http://localhost:7900` | `secret` |
+| Firefox | `http://localhost:7901` | `secret` |
+
+---
+
 ## 🧪 Demonstration
 The project includes an **`InsiderFailingUITest`** class which deliberately fails to demonstrate the automatic screenshot capture and reporting mechanism.
