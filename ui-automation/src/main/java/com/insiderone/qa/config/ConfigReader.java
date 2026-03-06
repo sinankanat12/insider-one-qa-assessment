@@ -39,14 +39,25 @@ public class ConfigReader {
 
     // System property takes precedence over config.properties
     private static String resolve(String key, String defaultValue) {
+        // 1. Try env variable (KEY_NAME) - Best for Docker/CI
+        String envKey = key.replace(".", "_").toUpperCase();
+        String envValue = System.getenv(envKey);
+        if (envValue != null && !envValue.isBlank()) {
+            return envValue;
+        }
+
+        // 2. Try system property (-Dkey=value) - Best for IDE/Local
         String systemProp = System.getProperty(key);
         if (systemProp != null && !systemProp.isBlank()) {
             return systemProp;
         }
+
+        // 3. Try config.properties
         String fileProp = props.getProperty(key);
         if (fileProp != null && !fileProp.isBlank()) {
             return fileProp;
         }
+
         return defaultValue;
     }
 }

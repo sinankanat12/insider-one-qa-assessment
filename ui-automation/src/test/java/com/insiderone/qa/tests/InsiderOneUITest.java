@@ -45,6 +45,13 @@ class InsiderOneUITest {
                 HomePage homePage = new HomePage(DriverManager.getDriver());
                 homePage.open();
 
+                // TEMPORARY: Sleep to see the session in Grid UI
+                try {
+                        Thread.sleep(20000);
+                } catch (InterruptedException e) {
+                        e.printStackTrace();
+                }
+
                 // Wait for page to fully load
                 homePage.waitForPageToLoad();
 

@@ -11,6 +11,7 @@ This project contains a robust, scalable, and maintainable end-to-end UI automat
 - **Reporting:** Integrated with **Allure Report** for detailed execution insights.
 - **Configuration Management:** Centralized configuration via `config.properties`.
 - **Driver Management:** Uses `ThreadLocal` for safe driver handling and future parallel execution support.
+- **Selenium Grid Support:** Docker Compose orchestrates a full Selenium Grid (Hub + Chrome + Firefox nodes) for cross-browser, containerized test execution.
 
 ## 🛠 Tech Stack
 
